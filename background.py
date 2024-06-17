@@ -9,30 +9,27 @@ from models import Car
 
 settings = BaseConfig()
 
-client = OpenAI(
-    # This is the default and can be omitted
-    api_key=settings.OPENAI_API_KEY
-)
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 resend.api_key = settings.RESEND_API_KEY
 
 
 def generate_prompt(brand: str, model: str, year: int) -> str:
     return f"""
-    You are a helpful car sales assistant. Describe the {brand} {model} from {year} in a playful and overall positive manner.
-    Also, provide five pros and five cons of the model, but formulate the cons in a positive way.
+    You are a helpful car sales assistant. Describe the {brand} {model} from {year} in a playful manner.
+    Also, provide five pros and five cons of the model, but formulate the cons in a not overly negative way.
     You will respond with a JSON format consisting of the following:
     a brief description of the {brand} {model}, playful and positive, but not over the top.
     This will be called *description*. Make it at least 350 characters.
     an array of 5 brief *pros* of the car model, short and concise, maximum 12 words, slightly positive and playful
-    an array of 5 brief *cons* drawbacks of the car model, short and concise, maximum 12 words
+    an array of 5 brief *cons* drawbacks of the car model, short and concise, maximum 12 words, not too negative, but in a slightly negative tone
+    make the *pros* sound very positive and the *cons* sound negative, but not too much 
     """
 
 
-def delayed_task(message: str) -> None:
-    print(f"Delayed task: {message}")
+def delayed_task(username: str) -> None:
     sleep(5)
-    print(message)
+    print(f"The following user just logged in: {username}")
 
 
 async def create_description(brand, make, year, picture_url):
@@ -43,7 +40,7 @@ async def create_description(brand, make, year, picture_url):
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
-            temperature=0.0,
+            temperature=0.2,
         )
         content = response.choices[0].message.content
         json_part = content
@@ -65,25 +62,13 @@ async def create_description(brand, make, year, picture_url):
 
             return f"""
             Hello,
-
             We have a new car for you: {brand} {make} from {year}.
-            <p>
-
-            <img src="{picture_url}"/>
-
-            </p>
-
+            <p><img src="{picture_url}"/></p>
             {car_info['description']}
-
             <h3>Pros</h3>
-
             {pros_list}
-
             <h3>Cons</h3>
-
-            {cons_list}   
-
-            
+            {cons_list}            
             """
 
         params: resend.Emails.SendParams = {

@@ -7,7 +7,7 @@ from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
                      HTTPException, UploadFile, status)
 
 from authentication import AuthHandler
-from background import create_description, delayed_task
+from background import create_description
 from config import BaseConfig
 from models import Car, UpdateCar, User
 
@@ -28,7 +28,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Car])
 async def get_cars():
-    """Create a new car with a generated id."""
+    """Get all cars from the database."""
 
     return await Car.find_all().to_list()
 
@@ -71,7 +71,7 @@ async def add_car_with_picture(
     """Upload picture to Cloudinary and create a new car with a generated id."""
 
     cloudinary_image = cloudinary.uploader.upload(
-        picture.file, folder="FARM2", crop="fill", width=800, gravity="auto"
+        picture.file, folder="FARM2", crop="fill", width=800, height=600, gravity="auto"
     )
 
     print("User data:", user_data)
@@ -91,7 +91,7 @@ async def add_car_with_picture(
     )
 
     """Create a new car with a generated id."""
-    background_tasks.add_task(delayed_task, message="Inserting car...")
+
     background_tasks.add_task(
         create_description, brand=brand, make=make, year=year, picture_url=picture_url
     )
@@ -101,11 +101,12 @@ async def add_car_with_picture(
 
 @router.put("/{car_id}", response_model=Car)
 async def update_car(car_id: PydanticObjectId, cardata: UpdateCar):
-    print(cardata)
     car = await Car.get(car_id)
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")
-    return await car.set(cardata)
+    updated_car = {k: v for k, v in cardata.model_dump().items() if v is not None}
+
+    return await car.set(updated_car)
 
 
 @router.delete("/{car_id}")

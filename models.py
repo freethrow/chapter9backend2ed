@@ -10,7 +10,7 @@ class User(Document):
     password: str
     email: str
 
-    date: datetime = datetime.now()
+    created: datetime = Field(default_factory=datetime.now)
 
     class Settings:
         name = "user"
@@ -73,5 +73,5 @@ class Car(Document):
 class UpdateCar(BaseModel):
     price: Optional[float] = None
     description: Optional[str] = None
-    pros: Optional[List[str]] = []
-    cons: Optional[List[str]] = []
+    pros: Optional[List[str]] = None
+    cons: Optional[List[str]] = None
