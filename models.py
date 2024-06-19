@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from beanie import Document, Link, PydanticObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
 
 
 class User(Document):
@@ -42,7 +42,7 @@ class CurrentUser(BaseModel):
     id: PydanticObjectId
 
 
-class Car(Document):
+class Car(Document, extra=Extra.allow):
     brand: str
     make: str
     year: int

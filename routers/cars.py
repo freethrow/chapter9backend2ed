@@ -3,8 +3,16 @@ from typing import List
 import cloudinary
 from beanie import PydanticObjectId, WriteRules
 from cloudinary import uploader  # noqa: F401
-from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
-                     HTTPException, UploadFile, status)
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    status,
+)
 
 from authentication import AuthHandler
 from background import create_description
@@ -68,6 +76,9 @@ async def add_car_with_picture(
     picture: UploadFile = File("picture"),
     user_data=Depends(auth_handler.auth_wrapper),
 ):
+    print("User data:", user_data)
+    print("Car data:", brand, make, year, cm3, km, price, picture)
+
     """Upload picture to Cloudinary and create a new car with a generated id."""
 
     cloudinary_image = cloudinary.uploader.upload(
